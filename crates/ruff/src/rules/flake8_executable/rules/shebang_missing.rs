@@ -25,7 +25,7 @@ use crate::rules::flake8_executable::helpers::is_executable;
 /// If the file is meant to be executable, add a shebang; otherwise, remove the
 /// executable bit from the file.
 ///
-/// _This rule is only available on Unix-like systems._
+/// _This rule is only available on Unix-like (excluding WSL) systems._
 ///
 /// ## References
 /// - [Python documentation: Executable Python Scripts](https://docs.python.org/3/tutorial/appendix.html#executable-python-scripts)
@@ -42,6 +42,9 @@ impl Violation for ShebangMissingExecutableFile {
 /// EXE002
 #[cfg(target_family = "unix")]
 pub(crate) fn shebang_missing(filepath: &Path) -> Option<Diagnostic> {
+    if wsl::is_wsl() {
+        return None;
+    }
     if let Ok(true) = is_executable(filepath) {
         let diagnostic = Diagnostic::new(ShebangMissingExecutableFile, TextRange::default());
         return Some(diagnostic);

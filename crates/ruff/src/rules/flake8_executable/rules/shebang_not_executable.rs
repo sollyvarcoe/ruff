@@ -27,7 +27,7 @@ use crate::rules::flake8_executable::helpers::ShebangDirective;
 /// If the file is meant to be executable, add a shebang; otherwise, remove the
 /// executable bit from the file.
 ///
-/// _This rule is only available on Unix-like systems._
+/// _This rule is only available on Unix-like (excluding WSL) systems._
 ///
 /// ## References
 /// - [Python documentation: Executable Python Scripts](https://docs.python.org/3/tutorial/appendix.html#executable-python-scripts)
@@ -48,6 +48,9 @@ pub(crate) fn shebang_not_executable(
     range: TextRange,
     shebang: &ShebangDirective,
 ) -> Option<Diagnostic> {
+    if wsl::is_wsl() {
+        return None;
+    }
     if let ShebangDirective::Match(_, start, content) = shebang {
         if let Ok(false) = is_executable(filepath) {
             let diagnostic = Diagnostic::new(
